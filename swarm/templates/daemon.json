@@ -1,0 +1,1 @@
+{ "insecure-registries":["{{ host }}:5000","registry.home:5000"] }

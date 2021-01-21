@@ -1,0 +1,5 @@
+---
+# defaults file for system
+preinstalled:
+  - rng-tools5
+  - iperf3

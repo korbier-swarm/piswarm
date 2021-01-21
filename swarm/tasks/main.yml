@@ -1,0 +1,45 @@
+---
+# tasks file for swarm
+- name: 'Install dependencies'
+  become: true
+  apt:
+    force_apt_get: "yes"
+    pkg: '{{ packages }}'
+    update_cache: yes
+    state: latest
+
+- name: 'Install python dependencies'
+  become: true
+  pip: 
+    name: '{{ packages_python }}'
+
+- name: 'Download Docker script'
+  become: true
+  get_url:
+    url: 'https://get.docker.com/'
+    dest: ~/get-docker.sh
+
+- name: 'Executing Docker script'
+  become: true
+  shell: 'sh ~/get-docker.sh'
+
+- name: 'Configuring pi user'
+  become: true
+  user:
+    name: pi
+    groups: docker
+    append: yes
+
+- name: 'Unsecure registry'
+  become: true
+  vars:
+    host: "{{ hostvars[groups['manager'][0]]['ansible_default_ipv4']['address'] }}"
+  template:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: Starting Docker service
+  become: true
+  systemd:
+    state: started
+    name: docker.service

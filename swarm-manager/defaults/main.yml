@@ -1,0 +1,12 @@
+---
+# defaults file for swarm-manager
+directory:
+  proxy:
+    stack: /home/pi/swarm/00-proxy/stack
+    data: /home/pi/swarm/00-proxy/data
+  admin:
+    stack: /home/pi/swarm/01-admin/stack
+    data: /home/pi/swarm/01-admin/data
+  registry:
+    stack: /home/pi/swarm/02-registry/stack
+    data: /home/pi/swarm/02-registry/data

@@ -1,0 +1,17 @@
+- hosts: all
+  roles:
+    - system
+    - swarm
+
+- hosts: manager
+  roles:
+    - swarm-manager
+
+- hosts: worker
+  roles:
+    - swarm-worker
+
+- hosts: manager
+  roles:
+    - stack-dev
+    - stack-cloud

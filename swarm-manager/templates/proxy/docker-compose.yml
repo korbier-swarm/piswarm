@@ -1,0 +1,52 @@
+version: "3.3"
+
+networks:
+  proxy:
+    external: true
+
+services:
+
+  traefik:
+    image: "traefik:v2.2"
+    command:
+      - "--api.insecure=true"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entryPoints.websecure.address=:443"
+      - "--entryPoints.forwarding.address=:9999"
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+      - "9999:9999" 
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "{{ directory.proxy.data }}/traefik:/etc/traefik"
+    networks:
+      - proxy
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.treafik.rule=Host(`traefik.home`)"
+        - "traefik.http.routers.traefik.entrypoints=web"
+        - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+        - "traefik.docker.network=proxy"
+
+  unbound:
+    image: klutchell/unbound 
+    volumes:
+      - "{{ directory.proxy.data }}/unbound:/opt/unbound/etc/unbound"
+      - "{{ directory.proxy.data }}/unbound/log:/var/log/unbound"
+    ports:
+      - 53:5053/tcp
+      - 53:5053/udp
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager

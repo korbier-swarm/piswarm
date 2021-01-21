@@ -1,0 +1,15 @@
+---
+# defaults file for swarm
+packages:
+  - apt-transport-https 
+  - ca-certificates 
+  - software-properties-common
+  - python3-pip
+  - libffi-dev
+  - libssl-dev
+  - git
+
+packages_python:
+  - jsondiff
+  - docker
+  - docker-compose

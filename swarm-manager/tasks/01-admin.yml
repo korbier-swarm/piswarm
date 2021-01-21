@@ -1,0 +1,23 @@
+---
+- name: Create admin data directory inner structure
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+  with_items:
+  - '{{ directory.admin.stack }}'
+  - '{{ directory.admin.data }}'
+  - '{{ directory.admin.data }}/portainer'
+
+- name: Send compose file to remote
+  become: true
+  template:
+    src: 'admin/docker-compose.yml'
+    dest: '{{ directory.admin.stack }}'
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: admin
+    compose:
+      - "{{ directory.admin.stack }}/docker-compose.yml"

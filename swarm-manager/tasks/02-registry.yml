@@ -1,0 +1,23 @@
+---
+- name: Create registry data directory inner structure
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+  with_items:
+  - '{{ directory.registry.stack }}'
+  - '{{ directory.registry.data }}'
+  - '{{ directory.registry.data }}/registry'
+
+- name: Send compose file to remote
+  become: true
+  template:
+    src: 'registry/docker-compose.yml'
+    dest: '{{ directory.registry.stack }}'
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: registry
+    compose:
+      - "{{ directory.registry.stack }}/docker-compose.yml"

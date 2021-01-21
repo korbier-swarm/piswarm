@@ -1,0 +1,9 @@
+---
+# tasks file for stack-cloud
+- name: 'Adding cloud=true label to cloud nodes'
+  docker_node:
+    hostname: "{{ hostvars[item]['hostname']  }}"
+    labels:
+      cloud: "true"
+    labels_state: merge
+  with_items: "{{ groups['cloud'] }}"

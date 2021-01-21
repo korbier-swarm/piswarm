@@ -1,0 +1,102 @@
+---
+- name: "Update packages to the last version"
+  become: true
+  apt:
+    force_apt_get: "yes"
+    name: "*"
+    state: latest
+
+- name: "Upgrade packages"
+  become: true
+  apt:
+    force_apt_get: "yes"
+    upgrade: dist     
+
+- name: "Update /etc/hostname - renaming hostname"
+  become: true
+  hostname:
+    name: '{{ hostname }}'
+
+- name: "Update /etc/hosts - Adding cluster nodes"  
+  become: true
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "{{item}}"
+    line: "{{hostvars[item]['ansible_default_ipv4']['address']}}       {{hostname}}"    
+    insertafter: EOF
+    state: present    
+  loop: "{{ ansible_play_batch  }}"
+
+- name: "Update /etc/hosts - renaming hostname"  
+  become: true
+  lineinfile:
+    dest: /etc/hosts
+    regexp: "127.0.1.1"
+    line: "127.0.1.1       {{hostname}}"    
+    insertafter: EOF
+    state: present  
+    
+- name: "Update sshd config - ClientAliveInterval"
+  become: true
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "ClientAliveInterval"
+    line: "ClientAliveInterval 30"
+    insertafter: EOF
+    state: present
+
+- name: "Update sshd config - ClientAliveCountMax"
+  become: true
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "ClientAliveCountMax"
+    line: "ClientAliveCountMax 10"
+    insertafter: EOF
+    state: present
+
+- name: "Update sshd Qos"
+  become: true
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "IPQoS"
+    line: "IPQoS cs0 cs0"
+    insertafter: EOF
+    state: present
+
+- name: "Set gpu_mem to 16"
+  become: true
+  lineinfile:
+    dest: /boot/config.txt
+    regexp: "^#?gpu_mem"
+    line: "gpu_mem=16"
+    insertafter: EOF
+    state: present
+
+- name: "Disable hdmi on startup"
+  become: true
+  lineinfile:
+    dest: /etc/rc.local
+    regexp: "^/usr/bin/tvservice"
+    line: "/usr/bin/tvservice -o"
+    insertbefore: "^exit"
+    state: present
+
+- name: Update DNS
+  become: true
+  lineinfile:
+    dest: /etc/dhcpcd.conf
+    regexp: "static domain_name_servers"
+    line: "static domain_name_servers=192.168.1.26 192.168.1.254"
+    insertafter: EOF
+    state: present  
+
+- name: Install default programs
+  become: true
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: '{{ preinstalled }}'
+
+- name: Reboot the server and wait for it to come back up.
+  become: true
+  reboot:    

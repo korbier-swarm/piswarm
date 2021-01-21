@@ -1,0 +1,18 @@
+---
+# tasks file for swarm-manager
+- name: Initializing Swarm Manager
+  become: true
+  docker_swarm:
+    state: present
+  register: result
+
+- name: Create swarm proxy network
+  docker_network:
+    name: proxy
+    driver: overlay
+    attachable: yes
+    scope: swarm
+
+- include_tasks: 00-proxy.yml
+- include_tasks: 01-admin.yml
+- include_tasks: 02-registry.yml

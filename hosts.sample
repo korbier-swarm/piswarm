@@ -1,0 +1,28 @@
+all:
+  vars:
+    ansible_user: user
+    ansible_ssh_pass: password
+    ansible_python_interpreter: /usr/bin/python3
+  hosts:
+    192.168.1.77:
+      hostname: grumpy
+    192.168.1.78:
+      hostname: sneezy
+    192.168.1.79:
+      hostname: sleepy
+  children:
+    swarm:
+      children:
+        manager:
+          hosts:
+            192.168.1.77
+        worker:
+          hosts:
+          	192.168.1.78
+          	192.168.1.79
+    dev:
+      hosts:
+        192.168.1.78
+    cloud:
+      hosts:
+        192.168.1.79

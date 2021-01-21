@@ -1,0 +1,22 @@
+version: '3.2'
+
+networks:
+  proxy:
+    external: true
+
+services:
+  registry:
+    image: registry:2
+    ports:
+      - "5000:5000"
+    volumes:
+      - "{{ directory.registry.data }}/registry:/var/lib/registry"      
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.registry.rule=Host(`registry.home`)"
+        - "traefik.http.routers.registry.entrypoints=web"
+        - "traefik.http.services.registry.loadbalancer.server.port=5000"
+        - "traefik.docker.network=proxy"

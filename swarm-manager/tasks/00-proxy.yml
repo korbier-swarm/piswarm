@@ -1,0 +1,38 @@
+---
+- name: Create proxy data directory inner structure
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+  with_items:
+  - '{{ directory.proxy.stack }}'
+  - '{{ directory.proxy.data }}'
+  - '{{ directory.proxy.data }}/traefik'
+  - '{{ directory.proxy.data }}/unbound'
+  - '{{ directory.proxy.data }}/unbound/log'
+
+- name: Populate traefik files    
+  become: true
+  copy:
+    src: 'proxy/traefik'
+    dest: '{{ directory.proxy.data }}'
+
+- name: Populate unbound files  
+  become: true
+  copy:
+    src: 'proxy/unbound'
+    dest: '{{ directory.proxy.data }}'
+
+- name: Send compose file to remote
+  become: true
+  template:
+    src: 'proxy/docker-compose.yml'
+    dest: '{{ directory.proxy.stack }}'
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: proxy
+    compose:
+      - "{{ directory.proxy.stack }}/docker-compose.yml"
+
