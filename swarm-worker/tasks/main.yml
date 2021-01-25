@@ -1,2 +1,13 @@
 ---
 # tasks file for swarm-worker
+- name: 'Retreiving manager info'
+  docker_swarm_info:
+  delegate_to: "{{ hostvars[groups['manager'][0]]['inventory_hostname'] }}"
+  register: manager_info
+
+- name: 'Joining swarm cluster'
+  docker_swarm:
+    state: join
+    advertise_addr: eth0
+    join_token: "{{ manager_info.swarm_facts.JoinTokens.Worker }}"
+    remote_addrs: [ "{{ hostvars[groups['manager'][0]]['inventory_hostname'] }}:2377" ]

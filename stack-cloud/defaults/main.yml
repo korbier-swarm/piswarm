@@ -1,2 +1,5 @@
 ---
 # defaults file for stack-cloud
+directory:
+  stack: /home/pi/swarm/stack-cloud/stack
+  data: /home/pi/swarm/stack-cloud/data

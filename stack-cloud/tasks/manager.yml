@@ -1,0 +1,30 @@
+---
+# tasks file for stack-cloud
+- name: 'Adding cloud=true label to cloud nodes'
+  docker_node:
+    hostname: "{{ hostvars[item]['hostname']  }}"
+    labels:
+      cloud: "true"
+    labels_state: merge
+  with_items: "{{ groups['cloud'] }}"
+  
+- name: Create directory inner structure
+  file:
+    path: '{{ item }}'
+    state: directory
+    mode: 0755
+  with_items:
+  - '{{ directory.stack }}'
+
+- name: Send compose file to remote
+  become: true
+  template:
+    src: 'docker-compose.yml'
+    dest: '{{ directory.stack }}'
+
+- name: Deploy stack
+  docker_stack:
+    state: present
+    name: cloud
+    compose:
+      - "{{ directory.stack }}/docker-compose.yml"

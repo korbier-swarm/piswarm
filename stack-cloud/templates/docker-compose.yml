@@ -1,0 +1,49 @@
+version: '3'
+
+networks:
+  proxy:
+    external: true
+
+services:
+
+  database:
+    image: postgres
+    volumes:
+      - "{{ directory.data }}/postgresql:/var/lib/postgresql/data"
+    ports:
+      - 10010:5432
+    deploy:
+      placement:
+        constraints:
+          - node.labels.cloud == true
+    networks:
+      - proxy
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  cloud:
+    image: nextcloud
+    ports:
+      - 10011:80
+    volumes:
+      - "{{ directory.data }}/nextcloud:/var/www/html"
+    deploy:
+      placement:
+        constraints:
+          - node.labels.cloud == true
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.nextcloud.rule=Host(`nextcloud.home`)"
+        - "traefik.http.routers.nextcloud.tls=true"
+        - "traefik.http.routers.nextcloud.entrypoints=websecure"
+        - "traefik.http.services.nextcloud.loadbalancer.server.port=80"
+        - "traefik.docker.network=proxy"
+    networks:
+      - proxy
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: database
+      OVERWRITEPROTOCOL: https
